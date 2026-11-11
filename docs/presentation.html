@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>StudyTrack — презентация</title>
+<style>
+    @page { size: 1280px 720px; margin: 0; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html, body, section.slide, .card, .node, .code, .pill {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #0f172a;
+        background: #fff;
+    }
+    section.slide {
+        width: 1280px;
+        height: 720px;
+        padding: 52px 64px;
+        page-break-after: always;
+        position: relative;
+        overflow: hidden;
+        background: #ffffff;
+    }
+    section.slide:last-child { page-break-after: auto; }
+    .kicker {
+        font-size: 15px;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: #2563eb;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    h1 { font-size: 64px; line-height: 1.02; margin: 0 0 18px; letter-spacing: -1.5px; }
+    h2 { font-size: 40px; line-height: 1.1; margin: 0 0 26px; letter-spacing: -0.7px; }
+    h3 { font-size: 20px; margin: 0 0 8px; }
+    p, li { font-size: 19px; line-height: 1.42; }
+    p { margin: 0 0 12px; }
+    ul { margin: 0; padding-left: 24px; }
+    li { margin-bottom: 8px; }
+    .muted { color: #64748b; }
+    .accent { color: #2563eb; }
+    section.slide.title-slide {
+        background: linear-gradient(135deg, #0f172a 0%, #172554 60%, #1d4ed8 100%);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .title-slide .kicker { color: #93c5fd; }
+    .title-slide h1 { font-size: 86px; }
+    .title-slide .sub { font-size: 28px; color: #dbeafe; margin-bottom: 40px; }
+    .title-slide .meta { font-size: 18px; color: #bfdbfe; line-height: 1.8; }
+    .footer {
+        position: absolute;
+        left: 64px; right: 64px; bottom: 26px;
+        display: flex; justify-content: space-between;
+        font-size: 13px; color: #94a3b8;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 10px;
+    }
+    .title-slide .footer { color: #93c5fd; border-color: #334155; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; }
+    .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .card {
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 20px 22px;
+        background: #f8fafc;
+    }
+    .card.blue { background: #eff6ff; border-color: #bfdbfe; }
+    .card.green { background: #ecfdf5; border-color: #a7f3d0; }
+    .card.amber { background: #fffbeb; border-color: #fde68a; }
+    .card p, .card li { font-size: 16px; }
+    .stat { font-size: 42px; font-weight: 800; color: #1d4ed8; line-height: 1; margin-bottom: 6px; }
+    .stat-label { font-size: 14px; color: #475569; }
+    .flow { display: flex; align-items: center; gap: 12px; margin: 22px 0 26px; flex-wrap: wrap; }
+    .node {
+        background: #1e293b;
+        color: #fff;
+        border-radius: 12px;
+        padding: 14px 18px;
+        font-size: 17px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .node.alt { background: #2563eb; }
+    .node.light { background: #e2e8f0; color: #0f172a; }
+    .arrow { color: #94a3b8; font-size: 26px; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; font-size: 16px; }
+    th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid #e2e8f0; }
+    th { color: #475569; font-size: 13px; text-transform: uppercase; letter-spacing: 0.8px; }
+    .code {
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 14px;
+        background: #0f172a;
+        color: #e2e8f0;
+        border-radius: 12px;
+        padding: 16px 18px;
+        line-height: 1.5;
+    }
+    .code .k { color: #93c5fd; }
+    .code .g { color: #86efac; }
+    .pill {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 14px;
+        font-weight: 700;
+        background: #dbeafe;
+        color: #1e40af;
+        margin: 0 6px 6px 0;
+    }
+    .pill.green { background: #d1fae5; color: #047857; }
+    .pill.amber { background: #fef3c7; color: #92400e; }
+    .big-number { font-size: 34px; font-weight: 800; color: #1d4ed8; }
+    .divider { height: 1px; background: #e2e8f0; margin: 18px 0; }
+    .small { font-size: 14px; color: #64748b; }
+</style>
+</head>
+<body>
+
+<section class="slide title-slide">
+    <div class="kicker">Индивидуальный проект по СУБД · PostgreSQL</div>
+    <h1>StudyTrack</h1>
+    <div class="sub">Учёт учебных заданий и результатов</div>
+    <div class="meta">
+        8 отношений · 2 VIEW · 5 функций/процедур · 2 триггера<br>
+        PostgreSQL 16.15 · Django 5.2 без ORM · Docker Compose
+    </div>
+    <div class="footer"><span>StudyTrack</span><span>2026</span></div>
+</section>
+
+<section class="slide">
+    <div class="kicker">01 · Задача</div>
+    <h2>Что требовалось получить</h2>
+    <div class="two-col">
+        <div>
+            <ul>
+                <li>Предметная схема с PK, FK, UNIQUE, CHECK и поведением удаления.</li>
+                <li>Справочник, операционные данные и большая выборка отдельно.</li>
+                <li>VIEW, функция, две процедуры, триггер, курсор.</li>
+                <li>Отчёты, CTE, оконные функции, UNION, FTS, JSONB.</li>
+                <li>Индексы и EXPLAIN до/после.</li>
+                <li>Транзакции, два сеанса, изоляция, deadlock.</li>
+                <li>Роли, backup/restore, минимальное приложение.</li>
+                <li>10+ тестов, ER, словарь, записка, презентация.</li>
+            </ul>
+        </div>
+        <div>
+            <div class="card blue">
+                <div class="stat">8</div>
+                <div class="stat-label">отношений, включая историю оценок</div>
+            </div>
+            <div class="card green" style="margin-top:16px;">
+                <div class="stat">48</div>
+                <div class="stat-label">версий работ и 47 оценок в демонстрационном наборе</div>
+            </div>
+            <div class="card amber" style="margin-top:16px;">
+                <div class="stat">16</div>
+                <div class="stat-label">обязательных запросов Q01–Q16 проверены</div>
+            </div>
+        </div>
+    </div>
+    <div class="footer"><span>StudyTrack · постановка</span><span>2 / 8</span></div>
+</section>
+
+<section class="slide">
+    <div class="kicker">02 · Модель</div>
+    <h2>Центральная цепочка данных</h2>
+    <div class="flow">
+        <div class="node">users</div><div class="arrow">→</div>
+        <div class="node alt">courses</div><div class="arrow">→</div>
+        <div class="node alt">assignments</div><div class="arrow">→</div>
+        <div class="node">submission_versions</div><div class="arrow">→</div>
+        <div class="node">grades</div><div class="arrow">→</div>
+        <div class="node light">grade_history</div>
+    </div>
+    <div class="two-col">
+        <div>
+            <h3>Связи и ограничения</h3>
+            <ul>
+                <li><b>course_categories</b> — self-FK, иерархия и пустая категория.</li>
+                <li><b>enrollments</b> — M:N студентов и курсов, UQ пары.</li>
+                <li><b>assignments</b> — срок, max_score, JSONB-параметры.</li>
+                <li><b>submission_versions</b> — UQ (задание, студент, версия).</li>
+                <li><b>grades</b> — одна актуальная оценка на версию.</li>
+            </ul>
+        </div>
+        <div>
+            <h3>Нормализация и вычисления</h3>
+            <ul>
+                <li>3НФ: устранены повторяющиеся группы и транзитивные зависимости.</li>
+                <li>FK — <b>RESTRICT</b>, история не удаляется каскадно.</li>
+                <li><b>expected_minutes</b> — GENERATED STORED из JSONB.</li>
+                <li><b>search_vector</b> — GENERATED tsvector (russian).</li>
+                <li>Доп. параметры — JSONB, но ключи и суммы в обычных столбцах.</li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer"><span>StudyTrack · схема и нормализация</span><span>3 / 8</span></div>
+</section>
+
+<section class="slide">
+    <div class="kicker">03 · Бизнес-логика в БД</div>
+    <h2>Процедуры, блокировки и триггеры</h2>
+    <div class="two-col">
+        <div>
+            <div class="card">
+                <h3>submit_version</h3>
+                <p>Блокирует <b>assignments → enrollments</b>, проверяет активное зачисление, вычисляет следующий номер версии и ставит <b>is_late</b>.</p>
+            </div>
+            <div class="card" style="margin-top:16px;">
+                <h3>grade_version</h3>
+                <p>Блокирует версию, проверяет преподавателя курса и диапазон <b>0…max_score</b>, пишет оценку и дату совместно.</p>
+            </div>
+        </div>
+        <div>
+            <div class="card blue">
+                <h3>trg_grades_validate</h3>
+                <p>Не даёт выставить оценку выше max_score или «чужим» преподавателем даже прямым INSERT.</p>
+            </div>
+            <div class="card green" style="margin-top:16px;">
+                <h3>trg_grades_history</h3>
+                <p>Пишет INSERT/UPDATE в отдельную таблицу. Исправление 88 → 90 сохраняет old_score и не удваивает итог.</p>
+            </div>
+            <div class="card amber" style="margin-top:16px;">
+                <h3>VIEW + функция</h3>
+                <p><b>v_course_results</b>, <b>v_assignment_status</b>, <b>fn_student_course_result</b> — единый источник отчётов.</p>
+            </div>
+        </div>
+    </div>
+    <div class="footer"><span>StudyTrack · целостность и основной сценарий</span><span>4 / 8</span></div>
+</section>
+
+<section class="slide">
+    <div class="kicker">04 · Запросы и отчёты</div>
+    <h2>Q01–Q16: от фильтра до оконных функций</h2>
+    <div class="two-col">
+        <div>
+            <ul>
+                <li>JOIN 4+ таблиц, LEFT JOIN с пустой категорией.</li>
+                <li>GROUP BY / HAVING, EXISTS и NOT EXISTS.</li>
+                <li><b>WITH RECURSIVE</b>: глубина, путь, защита от цикла.</li>
+                <li>ROW_NUMBER — последняя версия в группе.</li>
+                <li>RANK / DENSE_RANK — равные баллы.</li>
+                <li>LAG / LEAD — интервалы между версиями.</li>
+                <li>NTILE(4) — квартили по среднему проценту.</li>
+                <li>UNION и UNION ALL — устранение дубликатов.</li>
+            </ul>
+        </div>
+        <div>
+            <table>
+                <tr><th>Отчёт</th><th>Проверка</th></tr>
+                <tr><td>Сдаваемость и просрочки</td><td>6 оценок по заданию 3 → avg 17.17</td></tr>
+                <tr><td>Средние по курсам</td><td>курс 2 → 85.33%</td></tr>
+                <tr><td>Текущий результат</td><td>последняя оценённая версия</td></tr>
+                <tr><td>Исправление</td><td>одна строка grades + история</td></tr>
+            </table>
+            <div class="code" style="margin-top:20px;">
+<span class="k">WITH</span> latest <span class="k">AS</span> (<br>
+&nbsp;&nbsp;<span class="k">SELECT</span> *, row_number() <span class="k">OVER</span> (<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">PARTITION BY</span> student_id, assignment_id<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">ORDER BY</span> version_no <span class="k">DESC</span>) rn<br>
+&nbsp;&nbsp;<span class="k">FROM</span> submission_versions<br>
+)<br>
+<span class="k">SELECT</span> * <span class="k">FROM</span> latest <span class="k">WHERE</span> rn = 1;
+            </div>
+        </div>
+    </div>
+    <div class="footer"><span>StudyTrack · SQL-запросы и отчётность</span><span>5 / 8</span></div>
+</section>
+
+<section class="slide">
+    <div class="kicker">05 · Поиск и оптимизация</div>
+    <h2>FTS, JSONB, GENERATED и EXPLAIN</h2>
+    <div class="three-col">
+        <div class="card blue">
+            <h3>Полнотекстовый поиск</h3>
+            <p><b>tsvector</b> + <b>websearch_to_tsquery</b> + <b>@@</b> + <b>ts_rank</b>.</p>
+            <p>Слова, фраза в кавычках, исключение через минус. GIN-индекс.</p>
+            <p class="small">Seq Scan 0.16 мс → Bitmap Index Scan 0.009 мс</p>
+        </div>
+        <div class="card green">
+            <h3>JSONB и GENERATED</h3>
+            <p><b>extra</b>: формат, время, разрешение повторной сдачи.</p>
+            <p><b>expected_minutes</b> извлекается в STORED-столбец и индексируется.</p>
+            <p class="small">Проверены значение 45, отсутствие ключа и неверный тип «abc».</p>
+        </div>
+        <div class="card amber">
+            <h3>Составной индекс</h3>
+            <p><b>(course_id, due_at)</b> — равенство, затем диапазон и сортировка.</p>
+            <p>1000 заданий, 1000 версий, 1000 оценок.</p>
+            <p class="small">Seq Scan 0.21 мс → Bitmap Index Scan 0.06 мс</p>
+        </div>
+    </div>
+    <div class="divider"></div>
+    <p><b>Вывод:</b> индексы выбраны под реальные условия запросов; если планировщик оставляет Seq Scan на большой доле таблицы, это объясняется, а не маскируется принудительным отключением.</p>
+    <div class="footer"><span>StudyTrack · поиск и планы выполнения</span><span>6 / 8</span></div>
+</section>
+
+<section class="slide">
+    <div class="kicker">06 · Конкурентность</div>
+    <h2>Транзакции, блокировки и deadlock</h2>
+    <div class="two-col">
+        <div>
+            <div class="card">
+                <h3>ROLLBACK и COMMIT</h3>
+                <p>Сдача + оценка откатываются вместе: версий 1 → 2 → 1. Отдельный COMMIT сохраняет результат.</p>
+            </div>
+            <div class="card blue" style="margin-top:16px;">
+                <h3>Два сеанса</h3>
+                <p>Сеанс A держит строку задания 12 секунд. Сеанс B ждёт ~10 секунд, затем создаёт следующую версию — без дублирования version_no.</p>
+            </div>
+        </div>
+        <div>
+            <div class="card green">
+                <h3>Изоляция</h3>
+                <p><b>READ COMMITTED</b>: второе чтение видит зафиксированное изменение.</p>
+                <p><b>REPEATABLE READ</b>: второе чтение сохраняет исходный снимок.</p>
+            </div>
+            <div class="card amber" style="margin-top:16px;">
+                <h3>Deadlock</h3>
+                <p>A: строка 1 → строка 2. B: строка 2 → строка 1.</p>
+                <p>PostgreSQL: <b>ERROR: deadlock detected</b>, одна транзакция откатывается.</p>
+                <p class="small">Профилактика — одинаковый порядок захвата ресурсов.</p>
+            </div>
+        </div>
+    </div>
+    <div class="footer"><span>StudyTrack · транзакции и блокировки</span><span>7 / 8</span></div>
+</section>
+
+<section class="slide">
+    <div class="kicker">07 · Эксплуатация и итоги</div>
+    <h2>Роли, backup, приложение, проверки</h2>
+    <div class="three-col">
+        <div class="card">
+            <h3>Роли PostgreSQL</h3>
+            <p><b>studytrack_app</b>: SELECT/INSERT/UPDATE, без DELETE и CREATE.</p>
+            <p><b>report_reader</b>: только SELECT двух VIEW.</p>
+            <p>Проверено: VIEW — да, users и UPDATE — отказ.</p>
+        </div>
+        <div class="card">
+            <h3>Backup / restore</h3>
+            <p><b>pg_dump -Fc</b> → 56 КБ.</p>
+            <p>Восстановление в <b>studytrack_restored</b>: 12 заданий, 48 версий, 47 оценок.</p>
+            <p>Новая сдача и оценка 95.00 прошли.</p>
+        </div>
+        <div class="card">
+            <h3>Приложение</h3>
+            <p>Django без ORM, psycopg, параметризованные запросы.</p>
+            <p>SET LOCAL ROLE для операций и отчётов.</p>
+            <p>Выбор пользователя — не аутентификация.</p>
+        </div>
+    </div>
+    <div class="divider"></div>
+    <div class="two-col">
+        <div>
+            <span class="pill green">10 тестов</span>
+            <span class="pill">2 сеанса</span>
+            <span class="pill">deadlock</span>
+            <span class="pill amber">restore</span>
+        </div>
+        <div class="small">
+            Запуск: <b>docker compose up -d --build</b> · приложение :8000 · PostgreSQL :5434<br>
+            Полный чек-лист — README.md, результаты — docs/test_results.md
+        </div>
+    </div>
+    <div class="footer"><span>StudyTrack · итоги</span><span>8 / 8</span></div>
+</section>
+
+</body>
+</html>

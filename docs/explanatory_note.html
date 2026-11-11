@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>StudyTrack — пояснительная записка</title>
+<style>
+    @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+    * { box-sizing: border-box; }
+    body {
+        font-family: "Times New Roman", Georgia, serif;
+        font-size: 11.2pt;
+        line-height: 1.42;
+        color: #111;
+        margin: 0;
+    }
+    h1 { font-size: 20pt; text-align: center; margin: 0 0 4mm; }
+    h2 { font-size: 14pt; margin: 6mm 0 2mm; border-bottom: 1px solid #999; padding-bottom: 1mm; }
+    h3 { font-size: 12pt; margin: 4mm 0 1.5mm; }
+    p { margin: 0 0 2.4mm; text-align: justify; }
+    ul, ol { margin: 0 0 2.5mm 5mm; padding-left: 4mm; }
+    li { margin-bottom: 1mm; }
+    table { width: 100%; border-collapse: collapse; margin: 2mm 0 3mm; font-size: 9.8pt; }
+    th, td { border: 1px solid #888; padding: 1.4mm 1.8mm; vertical-align: top; text-align: left; }
+    th { background: #eee; }
+    code, pre { font-family: "Courier New", monospace; font-size: 9.2pt; }
+    pre { background: #f4f4f4; border: 1px solid #ccc; padding: 2mm; white-space: pre-wrap; }
+    .title-page { text-align: center; margin-top: 28mm; }
+    .title-page .sub { font-size: 13pt; margin-top: 4mm; }
+    .title-page .meta { margin-top: 38mm; font-size: 11pt; line-height: 1.8; }
+    .note { background: #f7f7f7; border-left: 3px solid #555; padding: 2mm 3mm; margin: 3mm 0; font-size: 10.3pt; }
+    .toc { margin-top: 8mm; }
+    .toc div { margin: 1mm 0; }
+    .small { font-size: 9.5pt; color: #333; }
+    .page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<div class="title-page">
+    <h1>StudyTrack</h1>
+    <div class="sub">Учёт учебных заданий и результатов</div>
+    <div class="sub">Пояснительная записка к индивидуальному проекту по СУБД</div>
+    <div class="meta">
+        СУБД: PostgreSQL 16.15<br>
+        Приложение: Django 5.2 (тонкая оболочка без ORM)<br>
+        Запуск: Docker Compose<br>
+        Данные вымышлены
+    </div>
+</div>
+
+<div class="page-break"></div>
+
+<h2>1. Назначение и границы проекта</h2>
+<p>
+Проект реализует предметную область «учёт учебных заданий и результатов»:
+пользователи, категории курсов с иерархией, курсы, зачисления, задания,
+версии работ и оценки. Основной результат — работающая реляционная база данных
+PostgreSQL с ограничениями целостности, хранимой логикой, отчётами, правами
+доступа и воспроизводимым запуском.
+</p>
+<p>
+Минимальное приложение на Django используется как оболочка: оно открывает
+соединение через psycopg, передаёт параметры отдельно от SQL-текста и вызывает
+созданные в БД представления и процедуры. ORM, миграции, <code>django.contrib.auth</code>
+и административная панель не используются. Все предметные расчёты выполняются
+SQL-объектами, а не кодом Python.
+</p>
+<p>
+Границы: локальный запуск в Docker, консольный/веб-интерфейс без сложной
+аутентификации, отсутствие внешних интеграций. Выбор учебного пользователя
+в приложении не является проверкой личности; роль PostgreSQL и запись <code>users</code>
+различаются.
+</p>
+
+<h2>2. Модель данных и нормализация</h2>
+<p>
+Схема содержит восемь отношений. Центральная цепочка:
+<code>courses → assignments → submission_versions → grades</code>. Студенты связаны с курсами
+через <code>enrollments</code> (M:N), преподаватель курса хранится в <code>courses.teacher_id</code>,
+категории образуют self-FK <code>course_categories.parent_id</code>. История исправлений
+оценок вынесена в <code>grade_history</code>.
+</p>
+<table>
+<tr><th>Отношение</th><th>Назначение</th><th>Ключи и правила</th></tr>
+<tr><td><code>users</code></td><td>Студенты, преподаватели, администратор</td><td>PK <code>id</code>, UQ <code>email</code>, CHECK <code>role</code></td></tr>
+<tr><td><code>course_categories</code></td><td>Иерархия категорий</td><td>self-FK <code>parent_id</code> RESTRICT, CHECK <code>parent_id <> id</code></td></tr>
+<tr><td><code>courses</code></td><td>Курсы</td><td>FK категории и преподавателя, UQ <code>code</code></td></tr>
+<tr><td><code>enrollments</code></td><td>Зачисления</td><td>UQ <code>(course_id, student_id)</code>, CHECK <code>status</code></td></tr>
+<tr><td><code>assignments</code></td><td>Задания, срок, max_score, JSONB</td><td>CHECK <code>max_score > 0</code>, GENERATED-столбцы</td></tr>
+<tr><td><code>submission_versions</code></td><td>Версии работ</td><td>UQ <code>(assignment_id, student_id, version_no)</code></td></tr>
+<tr><td><code>grades</code></td><td>Оценка версии</td><td>UQ <code>version_id</code>, триггер проверки диапазона</td></tr>
+<tr><td><code>grade_history</code></td><td>История INSERT/UPDATE оценок</td><td>FK с <code>ON DELETE SET NULL</code></td></tr>
+</table>
+<p>
+Ненормализованная «ведомость» содержала списки заданий, версий и оценок в одной
+строке. При разложении устранены повторяющиеся группы (1НФ), частичные
+зависимости от составных ключей (2НФ) и транзитивные зависимости: название
+преподавателя, категории, курса и максимальный балл не дублируются, а получаются
+по FK. Для трёх основных отношений определены функциональные зависимости и
+кандидатные ключи:
+</p>
+<ul>
+<li><code>users</code>: <code>id → ...</code>, <code>email → ...</code>; ключи <code>id</code>, <code>email</code>;</li>
+<li><code>assignments</code>: <code>id → ...</code>; <code>expected_minutes</code> — детерминированное выражение от <code>extra</code>;</li>
+<li><code>submission_versions</code>: <code>(assignment_id, student_id, version_no) → body, submitted_at, is_late</code>; ключи <code>id</code> и эта тройка.</li>
+</ul>
+<p>
+Дополнительные параметры задания (<code>submission_format</code>, <code>expected_minutes</code>,
+<code>allow_revision</code>) хранятся в одном JSONB-столбце. Это допустимо, потому что они
+не участвуют в связях и не заменяют суммы/статусы/состав документа. Числовой
+<code>expected_minutes</code> вынесен в <code>GENERATED ALWAYS AS (...) STORED</code> и индексирован,
+поэтому фильтрация выполняется по обычному столбцу.
+</p>
+
+<h2>3. Ограничения целостности и предметные операции</h2>
+<p>
+Правила одной строки реализованы CHECK/NOT NULL, уникальность — UNIQUE,
+ссылки — FK. Поведение удаления у всех предметных FK — <code>RESTRICT</code>: удаление
+справочника не должно каскадно уничтожать историю. <code>grade_history</code> использует
+<code>SET NULL</code>, чтобы историческая запись сохранялась после удаления оценки.
+</p>
+<table>
+<tr><th>Правило</th><th>Средство</th></tr>
+<tr><td>Номер версии уникален в паре студент-задание</td><td>UNIQUE <code>(assignment_id, student_id, version_no)</code></td></tr>
+<tr><td>Оценка от 0 до max_score</td><td>CHECK <code>score >= 0</code> + триггер и процедура</td></tr>
+<tr><td>Сдаёт только зачисленный студент</td><td>проверка в <code>submit_version</code> под блокировкой</td></tr>
+<tr><td>Оценивает только преподаватель курса</td><td>триггер + <code>grade_version</code></td></tr>
+<tr><td>Просрочка помечается</td><td><code>is_late = now() > due_at</code> при вставке версии</td></tr>
+<tr><td>Текущий результат — последняя оценённая версия</td><td>VIEW <code>v_course_results</code> с ROW_NUMBER</td></tr>
+</table>
+<p>
+Ключевая операция «сдача версии» реализована процедурой <code>submit_version</code>.
+Порядок блокировок фиксирован: сначала <code>assignments</code>, затем <code>enrollments</code>
+(<code>SELECT ... FOR UPDATE</code>). Под блокировкой проверяется активное зачисление,
+вычисляется следующий <code>version_no</code> и вставляется версия. Оценка и её дата
+записываются совместно в <code>grade_version</code>; при исправлении обновляется одна
+строка <code>grades</code>, а триггер пишет старую и новую оценку в <code>grade_history</code>.
+Промежуточная ошибка откатывает всю транзакцию, поэтому половина операции
+не сохраняется.
+</p>
+
+<h2>4. Хранимые объекты</h2>
+<ul>
+<li><b>VIEW <code>v_course_results</code></b> — одна строка на пару «студент — задание»:
+последняя версия, у которой есть оценка, с процентом и признаком просрочки.
+Используется отчётами и приложением.</li>
+<li><b>VIEW <code>v_assignment_status</code></b> — одна строка на задание: число версий,
+сдавших студентов, просрочек, оценок и средний балл. Предварительные агрегаты
+в CTE исключают размножение строк при соединениях.</li>
+<li><b>Функция <code>fn_student_course_result(student_id, course_id)</code></b> — табличная
+функция текущих результатов; при отсутствии записей возвращает пустой набор.</li>
+<li><b>Процедура <code>submit_version(...)</code></b> — сдача версии с блокировкой и
+проверкой зачисления/разрешённых повторных сдач.</li>
+<li><b>Процедура <code>grade_version(...)</code></b> — выставление/исправление оценки,
+проверка диапазона и преподавателя, запись даты.</li>
+<li><b>Триггер <code>trg_grades_validate</code></b> — защищает правило <code>0 <= score <= max_score</code>
+и «только преподаватель курса» даже при прямом INSERT.</li>
+<li><b>Триггер <code>trg_grades_history</code></b> — пишет историю в другую таблицу,
+поэтому не вызывает рекурсивного обновления <code>grades</code>.</li>
+</ul>
+<p>
+Курсорный пример <code>sql/cursor_demo.sql</code> открывает курсор, читает отчёт частями
+(<code>FETCH 3</code>, затем <code>FETCH ALL</code>) и закрывает его; рядом приведён эквивалентный
+обычный SELECT. Курсор полезен для построчного чтения большого отчёта, SELECT —
+для получения всего результата одним запросом.
+</p>
+
+<h2>5. Запросы, отчёты, окна и CTE</h2>
+<p>
+В <code>sql/queries_Q01_Q16.sql</code> собраны 16 запросов: фильтрация и сортировка,
+JOIN четырёх таблиц, LEFT JOIN с пустой категорией, GROUP BY/HAVING,
+EXISTS/NOT EXISTS, два предметных отчёта, рекурсивный CTE, ROW_NUMBER,
+RANK/DENSE_RANK, LAG/LEAD, NTILE(4), UNION/UNION ALL, полнотекстовый поиск,
+JSONB и параметризованный запрос приложения.
+</p>
+<table>
+<tr><th>Отчёт</th><th>Единица</th><th>Правила учёта</th></tr>
+<tr><td>Сдаваемость и просрочки</td><td>задание</td><td>период по <code>due_at</code>; просрочка — <code>is_late</code>; отмен не предусмотрено</td></tr>
+<tr><td>Текущие оценки по курсам</td><td>курс</td><td>последняя оценённая версия; среднее сначала по студенту, затем по курсу</td></tr>
+</table>
+<p>
+Q06 показывает охват сдавших и долю просрочек. Q07 сначала считает средний
+процент каждого студента, затем средний по курсу — так студент с большим числом
+заданий не доминирует. Ручная проверка: по заданию 3 оценки
+19, 18, 15, 18, 17, 16 дают среднее 17.17; средний процент курса 2 — 85.33.
+</p>
+<p>
+Q08 — рекурсивный обход категорий: начальная часть выбирает корень, рекурсивная
+присоединяет дочерние узлы, накапливает глубину и путь. Условие
+<code>NOT child.id = ANY(path_ids)</code> прекращает обход при повторе узла. Проверены корень,
+лист и неизвестный id (пустой результат). Оконные функции применяются после
+группировки: ROW_NUMBER выбирает последнюю версию, RANK/DENSE_RANK строят рейтинг
+с равными значениями, LAG/LEAD показывают интервалы между версиями, NTILE(4)
+делит студентов на четыре группы по среднему проценту.
+</p>
+
+<h2>6. Полнотекстовый поиск и JSONB</h2>
+<p>
+Поле <code>assignments.search_vector</code> — <code>GENERATED ... to_tsvector('russian', title || ' ' || description)</code>,
+по нему создан GIN-индекс. Поиск выполняется через <code>websearch_to_tsquery</code> и <code>@@</code>,
+сортировка — по <code>ts_rank</code>. Поддержаны слова, фраза в кавычках и исключение через
+минус. В отличие от LIKE, полнотекстовый поиск работает с лексемами и словоформами,
+а не с подстрокой; результаты могут не совпадать, и это ожидаемо.
+</p>
+<p>
+JSONB-демонстрация показывает извлечение <code>extra->>'submission_format'</code>,
+числового <code>(extra->>'expected_minutes')::int</code>, обновление одного ключа через
+<code>jsonb_set</code>, добавление отсутствующего ключа. Вычисляемый столбец проверен на
+корректном значении (45), отсутствии ключа (NULL) и неверном типе (<code>"abc"</code> —
+ошибка приведения), а также на выходе за диапазон (2 — нарушение CHECK).
+</p>
+
+<h2>7. Оптимизация, транзакции и блокировки</h2>
+<p>
+Для сравнения планов <code>sql/bulk_seed_1000.sql</code> добавляет 1000 заданий, 1000 версий
+и 1000 оценок (скрипт не входит в автоинициализацию). Составной индекс
+<code>(course_id, due_at)</code> обслуживает основной список заданий курса с фильтром по
+сроку: сначала равенство по <code>course_id</code>, затем диапазон и сортировка по <code>due_at</code>.
+До индекса — Seq Scan, после — Bitmap Index Scan; время запроса уменьшилось
+примерно с 0.21 мс до 0.06 мс. Для полнотекстового поиска GIN-индекс дал
+Bitmap Index Scan вместо Seq Scan (0.16 мс → 0.009 мс). Индекс по
+<code>expected_minutes</code> также используется планировщиком.
+</p>
+<p>
+<code>sql/transactions_demo.sql</code> показывает BEGIN → изменение → ROLLBACK с проверкой
+всех связанных таблиц и отдельный успешный COMMIT. Два сеанса
+(<code>sessions/session_a.sql</code>, <code>session_b.sql</code>) конфликтуют за строку задания:
+второй ждёт освобождения и затем создаёт следующую версию без дублирования.
+<code>isolation_levels_demo.sql</code> через отдельное соединение dblink сравнивает
+READ COMMITTED (второе чтение видит зафиксированное изменение) и REPEATABLE READ
+(второе чтение сохраняет исходный снимок). <code>deadlock_a.sql</code>/<code>deadlock_b.sql</code>
+захватывают две строки в противоположном порядке; PostgreSQL обнаруживает
+взаимную блокировку и откатывает одну транзакцию. Одинаковый порядок захвата
+предотвращает такой сценарий.
+</p>
+
+<h2>8. Права, резервирование и приложение</h2>
+<p>
+Созданы роли <code>studytrack_app</code> (операции: SELECT/INSERT/UPDATE, без DELETE и без
+CREATE в схеме) и <code>report_reader</code> (только SELECT двух VIEW). Владелец объектов —
+<code>studytrack</code>; он может переключаться на роли для демонстрации <code>SET ROLE</code>.
+Проверено: <code>report_reader</code> читает <code>v_course_results</code>, но получает отказ на
+<code>SELECT users</code> и <code>UPDATE courses</code>; <code>studytrack_app</code> не может удалять версии и
+создавать таблицы.
+</p>
+<p>
+Резервная копия снята в custom-формате (<code>pg_dump -Fc</code>) и восстановлена в отдельную
+БД <code>studytrack_restored</code>. Сверены 12 заданий, 48 версий, 47 оценок, 2 VIEW,
+5 функций/процедур и 2 триггера; в восстановленной БД выполнена новая сдача и
+оценка. Команды и версии — в <code>backup/restore_commands.md</code>.
+</p>
+<p>
+Django-приложение подключается через psycopg, параметры передаются отдельно от
+SQL-текста, соединение закрывается после запроса. Операции выполняются под
+<code>SET LOCAL ROLE studytrack_app</code>, отчёты — под <code>report_reader</code>; при ошибке
+транзакция откатывается и пользователь видит сообщение. Экран выбора учебного
+пользователя явно предупреждает, что это не аутентификация.
+</p>
+
+<h2>9. Запуск и проверка</h2>
+<pre>cd app
+cp .env.example .env
+# задать DB_PASSWORD и DJANGO_SECRET_KEY
+docker compose up -d --build
+# приложение: http://localhost:8000
+# psql: localhost:5434, база studytrack
+
+docker compose exec -T db psql -U studytrack -d studytrack -f /sql/tests_10_cases.sql
+docker compose exec -T db psql -U studytrack -d studytrack -f /sql/queries_Q01_Q16.sql</pre>
+<p>
+SQL-файлы <code>db/01_schema.sql</code> … <code>db/05_indexes.sql</code> выполняются автоматически
+только при первом создании тома. Для пересоздания:
+<code>docker compose down -v && docker compose up -d --build</code>.
+Результаты десяти проверок, двух сеансов и восстановления приведены в
+<code>docs/test_results.md</code>; фактический чек-лист — в <code>README.md</code>.
+</p>
+
+<div class="note">
+Ограничения: учебная демонстрация не является промышленной системой безопасности;
+<code>user_id</code> в приложении не доказывает личность. Отдельный механизм автоповторов
+при deadlock не разрабатывался — это не требуется ТЗ. Оптимизатор может выбрать
+Seq Scan на малых таблицах; в работе это объясняется, а не маскируется
+принудительным отключением.
+</div>
+
+</body>
+</html>
