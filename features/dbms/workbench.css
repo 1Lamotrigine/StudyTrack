@@ -691,7 +691,7 @@ html[data-theme='dark'] .dbms {
 }
 .db-result-panel {
   flex: 1;
-  min-height: 180px;
+  min-height: 240px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -2219,7 +2219,7 @@ html[data-theme='dark'] .dbms .db-top-error {
     max-height: 45dvh;
   }
   .db-result-panel {
-    min-height: 150px;
+    min-height: 220px;
   }
   .db-empty-panel {
     min-height: 110px;
@@ -2266,4 +2266,13 @@ html[data-theme='dark'] .dbms .db-top-error {
   .db-modal > header {
     padding: 16px;
   }
+}
+
+.db-workspace-tabs {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.dbms .db-workspace-tabs > button {
+  min-height: 0;
+  height: 100%;
 }

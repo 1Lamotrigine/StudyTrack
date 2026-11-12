@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { randomBytes } from 'node:crypto';
+import { usesEphemeralDatabase } from '@/lib/runtime';
+import { createDemoSession } from '@/lib/demo-session';
 import { call, one, query } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
 import { verifyPassword, tokenHash } from '@/lib/password';
@@ -20,16 +22,21 @@ export async function mutate(_previous: ActionState, form: FormData): Promise<Ac
       const account = await one('SELECT * FROM fn_login_lookup($1)', [input.text('login')]);
       if (!account || !verifyPassword(input.raw('password'), account.password_hash))
         throw new Error('Неверный логин или пароль. Проверьте данные и попробуйте ещё раз.');
-      const token = randomBytes(32).toString('hex');
-      await query('DELETE FROM web_sessions WHERE expires_at<now()');
-      await query("INSERT INTO web_sessions VALUES($1,$2,now()+interval '12 hours')", [
-        tokenHash(token),
-        account.id,
-      ]);
+      const ephemeral = usesEphemeralDatabase();
+      const token = ephemeral
+        ? createDemoSession(account.id, account.password_hash)
+        : randomBytes(32).toString('hex');
+      if (!ephemeral) {
+        await query('DELETE FROM web_sessions WHERE expires_at<now()');
+        await query("INSERT INTO web_sessions VALUES($1,$2,now()+interval '12 hours')", [
+          tokenHash(token),
+          account.id,
+        ]);
+      }
       (await cookies()).set('studytrack_session', token, {
         httpOnly: true,
         sameSite: 'lax',
-        secure: process.env.COOKIE_SECURE === 'true',
+        secure: process.env.VERCEL === '1' || process.env.COOKIE_SECURE === 'true',
         maxAge: 43200,
         path: '/',
       });
@@ -37,7 +44,8 @@ export async function mutate(_previous: ActionState, form: FormData): Promise<Ac
     } else if (op === 'logout') {
       const jar = await cookies();
       const token = jar.get('studytrack_session')?.value;
-      if (token) await query('DELETE FROM web_sessions WHERE token=$1', [tokenHash(token)]);
+      if (token && !usesEphemeralDatabase())
+        await query('DELETE FROM web_sessions WHERE token=$1', [tokenHash(token)]);
       jar.delete('studytrack_session');
       target = '/login';
     } else if (op === 'submit') {
@@ -75,6 +83,8 @@ export async function mutate(_previous: ActionState, form: FormData): Promise<Ac
       }
     }
   } catch (error) {
+    if (op === 'login' && error instanceof Error && 'code' in error)
+      console.error('[StudyTrack] Login failed:', error);
     return { error: friendlyError(error), values: input.values() };
   }
   revalidatePath('/', 'layout');

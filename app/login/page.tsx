@@ -37,31 +37,6 @@ export default async function Login() {
             <Field name="login" label="Логин" />
             <Field name="password" label="Пароль" type="password" />
           </Form>
-          <details className="login-demo">
-            <summary>Попробовать демоверсию</summary>
-            <table>
-              <thead>
-                <tr>
-                  <th>Роль</th>
-                  <th>Логин / пароль</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ['Студент', 'student'],
-                  ['Преподаватель', 'teacher'],
-                  ['Администратор', 'admin'],
-                ].map(([label, role]) => (
-                  <tr key={role}>
-                    <td>{label}</td>
-                    <td>
-                      <code>{role}</code> / <code>{role}123</code>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </details>
         </div>
       </section>
     </div>

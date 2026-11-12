@@ -1,6 +1,8 @@
 import { PGlite } from '@electric-sql/pglite';
 import { readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
+import { usesEphemeralDatabase } from './runtime';
+import { ensureDefaultUsers } from './default-users';
 export type Row = Record<string, any>;
 export async function initialize(db: PGlite) {
   await db.waitReady;
@@ -48,9 +50,10 @@ export async function initialize(db: PGlite) {
       await tx.query('INSERT INTO schema_migrations VALUES($1)', [version]);
     });
   }
+  await ensureDefaultUsers(db);
   return db;
 }
-const SCHEMA_REVISION = 3;
+const SCHEMA_REVISION = 4;
 const globals = globalThis as unknown as {
   studytrackDb?: Promise<PGlite>;
   studytrackSchema?: number;
@@ -59,12 +62,17 @@ export function getDb() {
   if (!globals.studytrackDb) {
     globals.studytrackSchema = SCHEMA_REVISION;
     globals.studytrackDb = (async () => {
-      const dir = path.resolve(
-        /* turbopackIgnore: true */ process.env.PGLITE_DATA_DIR ||
-          path.join(process.cwd(), 'data', 'studytrack'),
-      );
-      await mkdir(path.dirname(dir), { recursive: true });
-      const db = new PGlite(dir);
+      let db: PGlite;
+      if (usesEphemeralDatabase()) {
+        db = new PGlite();
+      } else {
+        const dir = path.resolve(
+          /* turbopackIgnore: true */ process.env.PGLITE_DATA_DIR ||
+            path.join(process.cwd(), 'data', 'studytrack'),
+        );
+        await mkdir(path.dirname(dir), { recursive: true });
+        db = new PGlite(dir);
+      }
       try {
         return await initialize(db);
       } catch (error) {
