@@ -39,71 +39,44 @@ export async function Dashboard({ user, sp }: PageContext) {
       : await query(
           'SELECT action title,created_at happened_at,entity comment FROM admin_audit_log ORDER BY id DESC LIMIT 5',
         );
-  const name =
-    user.role === 'admin' ? 'администратор' : user.full_name.split(' ')[1] || user.full_name;
   return (
     <>
       {sp.error && <Notice kind="warn">{sp.error}</Notice>}
       <PageHeader
-        title={`С возвращением, ${name}`}
-        description={
-          student
-            ? 'Всё, что нужно для следующего шага в учёбе.'
-            : teacher
-              ? 'Работы студентов, обратная связь и ваши курсы.'
-              : 'Порядок в курсах, пользователях и учебных процессах.'
-        }
+        title="Обзор"
         action={<span className="date-note">{formatDate(new Date())}</span>}
       />
-      <section className="hero">
+      <section className="dashboard-summary" aria-labelledby="summary-title">
         <div>
-          <div className="eyebrow">
-            {student
-              ? 'Ваш учебный ритм'
-              : teacher
-                ? 'Время для обратной связи'
-                : 'Всё под контролем'}
-          </div>
-          <h2>
-            {student
-              ? pending.length
-                ? 'Каждая работа приближает к цели.'
-                : 'Отличный темп. Продолжайте!'
-              : teacher
-                ? waiting
-                  ? 'Ваших комментариев уже ждут.'
-                  : 'Всё проверено. Можно выдохнуть.'
-                : 'Хорошая организация — начало результата.'}
+          <h2 id="summary-title">
+            {student ? 'Задания к сдаче' : teacher ? 'Очередь проверки' : 'Управление порталом'}
           </h2>
           <p>
             {student
               ? pending.length
-                ? `${plural(pending.length, ['задание осталось', 'задания осталось', 'заданий осталось'])} сдать. Начните с самого важного — мы поможем не потерять фокус.`
-                : 'Вы сдали все доступные задания. Следите за обратной связью преподавателей.'
+                ? plural(pending.length, [
+                    'задание осталось',
+                    'задания осталось',
+                    'заданий осталось',
+                  ])
+                : 'Нет заданий к сдаче.'
               : teacher
                 ? waiting
-                  ? `${plural(waiting, ['работа ожидает', 'работы ожидают', 'работ ожидают'])} проверки. Оставьте обратную связь, которая поможет двигаться дальше.`
-                  : 'Все работы получили обратную связь. Новые отправки появятся в очереди проверки.'
-                : 'Настраивайте курсы и задания, управляйте доступом и следите за изменениями.'}
+                  ? plural(waiting, [
+                      'работа ждёт проверки',
+                      'работы ждут проверки',
+                      'работ ждут проверки',
+                    ])
+                  : 'Нет работ на проверку.'
+                : 'Пользователи, курсы и задания.'}
           </p>
-          <Link className="btn" href={student ? '/tasks' : teacher ? '/review' : '/admin'}>
-            {student ? 'Перейти к заданиям' : teacher ? 'Открыть очередь' : 'Управлять порталом'}
-            <Icon name="arrow" size={15} />
-          </Link>
         </div>
-        <div className="hero-art" aria-hidden="true">
-          <div className="hero-orbit" />
-          <div className="hero-book">
-            <Icon name="book" size={36} />
-          </div>
-          <span className="hero-star">
-            <Icon name="spark" size={22} />
-          </span>
-          <span className="hero-dot" />
-        </div>
+        <Link className="btn" href={student ? '/tasks' : teacher ? '/review' : '/admin'}>
+          {student ? 'Мои задания' : teacher ? 'Проверка работ' : 'Открыть управление'}
+        </Link>
       </section>
       <div className="stats">
-        <Metric label="Мои курсы" value={courses.length} hint="Активное обучение" icon="book" />
+        <Metric label="Мои курсы" value={courses.length} hint="Активные курсы" icon="book" />
         {student ? (
           <>
             <Metric
@@ -116,7 +89,7 @@ export async function Dashboard({ user, sp }: PageContext) {
             <Metric
               label="Ждут проверки"
               value={waiting}
-              hint="Обратная связь скоро появится"
+              hint="Отправленные работы"
               icon="clock"
               tone="orange"
             />
@@ -197,7 +170,7 @@ export async function Dashboard({ user, sp }: PageContext) {
         </Card>
       )}
       <div className="section-head">
-        <h2>{student ? 'Держим фокус' : teacher ? 'На проверку' : 'Последние события'}</h2>
+        <h2>{student ? 'Ближайшие задания' : teacher ? 'На проверку' : 'Последние события'}</h2>
         {user.role !== 'admin' && (
           <Link href={student ? '/tasks' : '/review'}>
             Смотреть все
@@ -286,7 +259,7 @@ export async function Dashboard({ user, sp }: PageContext) {
               title={student ? 'Все задания сданы' : 'Очередь пуста'}
               description={
                 student
-                  ? 'Можно уделить время обратной связи или посмотреть другие курсы.'
+                  ? 'Новые задания появятся здесь после публикации.'
                   : 'Новые работы студентов появятся здесь.'
               }
             />
@@ -313,7 +286,10 @@ export async function Dashboard({ user, sp }: PageContext) {
                 ))}
               </div>
             ) : (
-              <EmptyState title="Всё ещё впереди" description="Здесь появятся последние события." />
+              <EmptyState
+                title="Событий пока нет"
+                description="Здесь появятся последние события."
+              />
             )}
           </Card>
           {student && (

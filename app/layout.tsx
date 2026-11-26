@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import './globals.css';
+import './study-ui.css';
 export const metadata = {
   title: 'StudyTrack — учебные задания',
   description: 'Учёт учебных заданий и результатов',

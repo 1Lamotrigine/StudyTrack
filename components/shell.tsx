@@ -8,7 +8,7 @@ import { Form } from '@/app/components';
 const roles = { student: 'Студент', teacher: 'Преподаватель', admin: 'Администратор' };
 export function Shell({ user, children }: { user: User; children: ReactNode }) {
   return (
-    <div className="shell">
+    <div className="shell study-ui">
       <a className="skip-link" href="#main">
         К содержимому
       </a>
@@ -17,24 +17,13 @@ export function Shell({ user, children }: { user: User; children: ReactNode }) {
           <span className="logo">
             <Icon name="book" size={22} />
           </span>
-          StudyTrack<span className="brand-dot">.</span>
+          StudyTrack
         </Link>
         <div className="mobile-account">
           <ThemeToggle />
           <Form op="logout" back="/" />
         </div>
         <Navigation role={user.role} />
-        <div className="sidebar-note">
-          <span className="mini-icon">
-            <Icon name="spark" />
-          </span>
-          <strong>
-            Учиться. Создавать.
-            <br />
-            Двигаться вперёд.
-          </strong>
-          <p>Каждая работа — ещё один шаг к результату.</p>
-        </div>
         <div className="account">
           <span className="avatar">
             {user.full_name
@@ -52,19 +41,14 @@ export function Shell({ user, children }: { user: User; children: ReactNode }) {
       </aside>
       <div className="content">
         <header className="topbar">
-          <span className="topbar-label">Ваше учебное пространство</span>
+          <span className="topbar-label">{roles[user.role]}</span>
           <Link href="/search" className="top-search">
             <Icon name="search" size={17} />
-            Найти задание<span>⌕</span>
+            Найти задание
           </Link>
-          <span className="role-label">{roles[user.role]}</span>
           <ThemeToggle />
         </header>
         <main id="main">{children}</main>
-        <footer className="page-footer">
-          <span>StudyTrack</span>
-          <span>Маленькие шаги. Большие результаты.</span>
-        </footer>
       </div>
     </div>
   );

@@ -1,29 +1,14 @@
 import Link from 'next/link';
-import type { CSSProperties } from 'react';
 import type { Course, Role } from '@/lib/types';
 import { Icon } from '@/components/icon';
 import { Badge, Progress } from '@/components/ui';
 import { plural } from '@/lib/format';
-const colors = [
-  ['#eeeafa', '#9a88c6'],
-  ['#e8f4f0', '#7ba993'],
-  ['#fff3e4', '#c4a372'],
-  ['#eaf1fd', '#8ca8d0'],
-  ['#f8eefa', '#c299c9'],
-  ['#f1eee9', '#aaa08c'],
-];
 export function CourseCards({ courses, role }: { courses: Course[]; role: Role }) {
   return (
     <div className="course-grid">
       {courses.map((c) => {
-        const [bg, color] = colors[(c.id - 1) % colors.length];
         return (
-          <Link
-            href={`/courses/${c.id}`}
-            className="course-card"
-            key={c.id}
-            style={{ '--course-bg': bg, '--course-color': color } as CSSProperties}
-          >
+          <Link href={`/courses/${c.id}`} className="course-card" key={c.id}>
             <div className="course-card-top">
               <span className="course-symbol">
                 <Icon name="book" size={23} />

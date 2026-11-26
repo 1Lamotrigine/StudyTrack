@@ -29,7 +29,6 @@ export function Navigation({ role }: { role: Role }) {
   ];
   return (
     <nav className="side-nav" aria-label="Основная навигация">
-      <p className="nav-label">Рабочее пространство</p>
       {links
         .filter(([url]) => role !== 'admin' || url !== '/review')
         .map(([url, icon, label]) => {
@@ -43,7 +42,6 @@ export function Navigation({ role }: { role: Role }) {
             >
               <Icon name={icon} />
               <span>{label}</span>
-              {active && <span className="nav-dot" />}
             </Link>
           );
         })}

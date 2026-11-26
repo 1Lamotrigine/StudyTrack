@@ -1,0 +1,375 @@
+/* Portal and public pages. The SQL workbench uses its own visual system. */
+.study-ui {
+  --bg: #f1f5f9;
+  --surface: #fff;
+  --ink: #142b40;
+  --muted: #51677a;
+  --line: #d5dfe8;
+  --accent: #006d74;
+  --accent-soft: #e1f2f3;
+  --action: #006d74;
+  --action-hover: #00565d;
+  --rail: #102d46;
+  --rail-text: #c5d8e7;
+  --rail-active: #214963;
+  --rail-line: #36546d;
+  --rail-accent: #73dfd7;
+  --radius: 8px;
+  --shadow: none;
+  --section-gap: 20px;
+  --card-padding: clamp(16px, 2vw, 23px);
+
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+html[data-theme='dark'] .study-ui {
+  --bg: #101a25;
+  --surface: #172534;
+  --ink: #e8eff6;
+  --muted: #abc0d0;
+  --line: #32485b;
+  --accent: #82dfd9;
+  --accent-soft: #1f3c49;
+  --action: #137d83;
+  --action-hover: #106a70;
+  --rail: #0d2032;
+  --rail-active: #1c3a52;
+}
+
+.study-ui :is(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.study-ui .sidebar {
+  background: var(--rail);
+  border-color: var(--rail-line);
+}
+
+.study-ui .sidebar .brand,
+.study-ui .account strong {
+  color: #fff;
+}
+
+.study-ui .logo {
+  background: var(--action);
+  border-radius: var(--radius);
+  box-shadow: none;
+}
+
+.study-ui .side-nav a {
+  border-radius: 5px;
+  border-inline-start: 3px solid transparent;
+  color: var(--rail-text);
+  font-size: 0.875rem;
+  margin-bottom: 3px;
+  padding-block: 10px;
+}
+
+html[data-theme] .study-ui .side-nav a:hover,
+html[data-theme] .study-ui .side-nav a.active {
+  color: #fff;
+  background: var(--rail-active);
+}
+
+.study-ui .side-nav a.active {
+  border-inline-start-color: var(--rail-accent);
+}
+
+.study-ui .sidebar :focus-visible {
+  outline-color: var(--rail-accent);
+  outline-offset: -2px;
+}
+
+.study-ui .account {
+  border-color: var(--rail-line);
+}
+
+.study-ui .account strong,
+.study-ui .account small {
+  font-size: 0.75rem;
+}
+
+html[data-theme] .study-ui .account small {
+  color: var(--rail-text);
+}
+
+html[data-theme] .study-ui .sidebar .account button,
+html[data-theme] .study-ui .mobile-account button:not(.theme-toggle) {
+  color: var(--rail-text) !important;
+  background: transparent;
+}
+
+html[data-theme] .study-ui .topbar {
+  height: 62px;
+  background: var(--surface);
+}
+
+html[data-theme] .study-ui :is(.topbar-label, .top-search) {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+html[data-theme] .study-ui .top-search {
+  background: var(--bg);
+}
+
+.study-ui h1 {
+  font-size: clamp(1.65rem, 3vw, 2.15rem);
+  letter-spacing: -0.025em;
+}
+
+.study-ui :is(.lead, .body, .assignment-card .description) {
+  font-size: 0.9375rem;
+}
+
+.study-ui .page-heading .date-note {
+  font-size: 0.875rem;
+}
+
+.study-ui .dashboard-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+  padding: 17px var(--card-padding);
+  margin-bottom: var(--section-gap);
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.study-ui .dashboard-summary h2 {
+  margin: 0 0 2px;
+}
+
+.study-ui .dashboard-summary p {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+html[data-theme] .study-ui :is(.metric, .course-card, .table-wrap, .filter-bar, .assignment-card) {
+  background: var(--surface);
+  border-radius: var(--radius);
+}
+
+html[data-theme] .study-ui .course-card:hover {
+  border-color: var(--accent);
+  box-shadow: none;
+  transform: none;
+}
+
+.study-ui .course-card-top {
+  margin-bottom: 14px;
+}
+
+html[data-theme] .study-ui :is(.logo, .course-symbol, .metric-icon, .empty-icon, .task-number) {
+  border-radius: var(--radius);
+}
+
+html[data-theme]
+  .study-ui
+  :is(.course-symbol, .metric-icon, .empty-icon, .avatar, .teacher-name .avatar) {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+html[data-theme] .study-ui :is(.progress, .task-number, th) {
+  background: var(--bg);
+  border-color: var(--line);
+}
+
+html[data-theme] .study-ui .progress > span,
+html[data-theme] .study-ui .activity-item::before {
+  background: var(--accent);
+}
+
+html
+  .study-ui
+  :is(
+    .lead,
+    .metric-label,
+    .metric > small,
+    .course-code,
+    .course-card .course-desc,
+    .course-meta,
+    .teacher-name,
+    .activity-item p,
+    .activity-item time,
+    .task-context,
+    .field-help,
+    .filter-count,
+    .empty-state p,
+    .task-number,
+    .optional,
+    .details-list dt,
+    .tabs a,
+    .editor-meta,
+    .progress-group > div:first-child
+  ) {
+  color: var(--muted);
+}
+
+.study-ui
+  :is(
+    .metric-label,
+    .course-card .course-desc,
+    .course-meta,
+    .teacher-name,
+    .task-context,
+    .activity-item p,
+    .empty-state p,
+    .assignment-card p,
+    .details-list > div,
+    .filter-count,
+    .progress-group > div:first-child,
+    .progress-group strong
+  ) {
+  font-size: 0.8125rem;
+}
+
+.study-ui :is(.metric > small, .course-code, .activity-item time, .field-help, .optional) {
+  font-size: 0.75rem;
+}
+
+html
+  .study-ui
+  :is(.task-title, .activity-item strong, .empty-state h3, label, td, .body, .details-list dd) {
+  color: var(--ink);
+}
+
+.study-ui :is(.task-title, .activity-item strong, .empty-state h3, label, td, .tabs a) {
+  font-size: 0.875rem;
+}
+
+html
+  .study-ui
+  :is(
+    .tabs a.active,
+    .activity-score,
+    .course-bottom > svg,
+    .back-link,
+    .row-arrow,
+    .report-bar a,
+    .progress-group strong,
+    .timeline-card summary,
+    .timeline-card .feedback
+  ) {
+  color: var(--accent);
+}
+
+html[data-theme]
+  .study-ui
+  :is(.badge:not([class*='badge-']), .badge-admin, .alert:not(.warn, .ok, .error)) {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--line);
+}
+
+.study-ui :is(.badge, .details-list .badge, th, .table-link, .back-link, .section-head a) {
+  font-size: 0.75rem;
+}
+
+html[data-theme] .study-ui td {
+  border-color: var(--line);
+}
+
+html[data-theme] .study-ui tbody tr:hover {
+  background: var(--bg);
+}
+
+html[data-theme] .study-ui :is(.btn, button) {
+  border-radius: 6px;
+  box-shadow: none;
+  font-size: 0.875rem;
+}
+
+html[data-theme]
+  :is(.shell, .login-page, .standalone-error).study-ui
+  :is(.btn, button):not(.secondary):not(.ghost):not(.danger-button):not(.theme-toggle) {
+  background: var(--action);
+  color: #fff;
+}
+
+html[data-theme]
+  :is(.shell, .login-page, .standalone-error).study-ui
+  :is(.btn, button):not(.secondary):not(.ghost):not(.danger-button):not(.theme-toggle):hover {
+  background: var(--action-hover);
+}
+
+html[data-theme] .study-ui :is(.btn.secondary, .theme-toggle, label :is(input, select, textarea)) {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+html[data-theme] .study-ui :is(.btn.secondary:hover, .theme-toggle:hover, .body) {
+  background: var(--bg);
+  border-color: var(--line);
+}
+
+html[data-theme] .study-ui label :is(input, select, textarea) {
+  font-size: 0.9375rem;
+  border-radius: 6px;
+}
+
+html[data-theme] .study-ui label :is(input, select, textarea):focus {
+  border-color: var(--accent);
+  box-shadow: none;
+}
+
+html[data-theme] .study-ui :is(input, textarea)::placeholder {
+  color: var(--muted);
+}
+
+html[data-theme] .study-ui.login-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  background: var(--bg);
+}
+
+.study-ui .login-content {
+  padding: 72px var(--page-gutter) 32px;
+}
+
+.study-ui .login-form {
+  max-width: 420px;
+  padding: clamp(22px, 5vw, 36px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
+  border-radius: var(--radius);
+}
+
+.study-ui .login-form .brand {
+  padding: 0;
+  margin-bottom: 22px;
+}
+
+.study-ui .login-form h1 {
+  font-size: 1.5rem;
+  margin-bottom: 22px;
+}
+
+.study-ui .login-form .form-actions button {
+  width: 100%;
+}
+
+.study-ui.standalone-error {
+  min-height: 100dvh;
+}
+
+@media (max-width: 680px) {
+  .study-ui .side-nav a {
+    border-inline-start: 0;
+    border-bottom: 3px solid transparent;
+  }
+
+  .study-ui .side-nav a.active {
+    border-bottom-color: var(--rail-accent);
+  }
+}
